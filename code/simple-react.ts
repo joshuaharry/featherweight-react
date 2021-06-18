@@ -4,10 +4,14 @@ export const removeChildren = (domNode: HTMLElement): void => {
   }
 };
 
+type Props = Record<string, string | ((e: Event) => void)>;
+
+type Children = DomObject[] | string;
+
 interface DomObject {
   tagName: string;
-  props: Record<string, string>;
-  children: DomObject[] | string;
+  props: Props;
+  children: Children;
 }
 
 type RenderFunction<T> = (tree: T, domNode: HTMLElement) => void;
@@ -48,31 +52,43 @@ const throwOnBadChild: RenderFunction<any> = (badChild) => {
   throw new Error("UNEXPECTED ELEMENT IN TREE");
 };
 
-const renderDomString: RenderFunction<string> = (tree, domNode) => {
-  // eslint-disable-next-line no-param-reassign
+const renderString: RenderFunction<string> = (tree, domNode) => {
   domNode.innerHTML = tree;
 };
 
-const renderDomObject: RenderFunction<DomObject> = (tree, domNode) => {
-  const element = document.createElement(tree.tagName);
-  Object.entries(tree.props).forEach(([key, value]) => {
-    element.setAttribute(key, value);
+const assignProps = (props: Props, domNode: HTMLElement) => {
+  Object.entries(props).forEach(([key, value]) => {
+    if (typeof value === "string") {
+      domNode.setAttribute(key, value);
+    } else {
+      // @ts-ignore
+      domNode[key] = value;
+    }
   });
-  domNode.appendChild(element);
-  if (Array.isArray(tree.children)) {
-    tree.children.forEach((child) => render(child, element));
+};
+
+const renderChildren = (children: Children, domNode: HTMLElement) => {
+  if (Array.isArray(children)) {
+    children.forEach((child) => render(child, domNode));
   } else {
-    render(tree.children, element);
+    render(children, domNode);
   }
+};
+
+const renderObject: RenderFunction<DomObject> = (tree, domNode) => {
+  const element = document.createElement(tree.tagName);
+  domNode.appendChild(element);
+  assignProps(tree.props, element);
+  renderChildren(tree.children, element);
 };
 
 const paintDomToScreen: RenderFunction<VirtualDom> = (tree, domNode) => {
   switch (typeof tree) {
     case "string": {
-      return renderDomString(tree, domNode);
+      return renderString(tree, domNode);
     }
     case "object": {
-      return renderDomObject(tree, domNode);
+      return renderObject(tree, domNode);
     }
     default: {
       return throwOnBadChild(tree, domNode);
@@ -89,7 +105,7 @@ export const render: RenderFunction<VirtualDom> = (tree, domNode) => {
 
 export const createElement = (
   tagName: string,
-  props?: Record<string, string> | null,
+  props?: Props | null,
   children?: DomObject[] | string
 ): DomObject => ({
   tagName,

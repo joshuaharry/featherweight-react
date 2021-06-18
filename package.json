@@ -39,6 +39,7 @@
     "rules": {
       "@typescript-eslint/no-use-before-define": "off",
       "arrow-body-style": "off",
+      "no-param-reassign": "off",
       "@typescript-eslint/no-unused-vars": [
         "error",
         {

@@ -113,6 +113,11 @@ describe("Creating DOM elements", () => {
       children: "",
     });
   });
+  test("Works when the props include an event handler", () => {
+    const onChange = (_: Event) => {};
+    const node = h("p", { onchange: onChange });
+    expect(node.props["onchange"]).toBe(onChange);
+  });
   test("Works when you nest the elements", () => {
     const node = h("div", null, [
       h("p", null, "Hello, world!"),
