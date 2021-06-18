@@ -186,9 +186,11 @@ describe("Rendering to the Virtual DOM", () => {
       `<div id="app"><div><p>Hello, world!</p><p classname="green">Welcome to a very simple React!</p></div></div>`
     );
   });
-  test("Calling render twice does not render the VDOM twice.", () => {
+  test("Each time we call render, it updates with the latest information.", () => {
     render(h("p", null, "Hello!"), getRoot());
-    render(h("p", null, "Hello!"), getRoot());
-    expect(document.body.innerHTML).toBe(`<div id="app"><p>Hello!</p></div>`);
+    render(h("p", null, "Hello, world!"), getRoot());
+    expect(document.body.innerHTML).toBe(
+      `<div id="app"><p>Hello, world!</p></div>`
+    );
   });
 });
