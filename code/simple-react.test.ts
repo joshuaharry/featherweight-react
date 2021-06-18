@@ -1,5 +1,11 @@
 import "@testing-library/jest-dom";
-import { render, removeChildren, createElement as h } from "./simple-react";
+import {
+  render,
+  removeChildren,
+  createElement as h,
+  viewHooks,
+  withHooks,
+} from "./simple-react";
 
 beforeEach(() => {
   document.body.innerHTML = `<div id="app"></div>`;
@@ -12,6 +18,56 @@ const getRoot = (): HTMLDivElement => {
   }
   return app;
 };
+
+describe("Our hook state", () => {
+  test("We can view our current hook state for debugging purposes", () => {
+    expect(viewHooks()).toEqual({ hooks: [], hookCounter: null });
+  });
+  test("We can safely modify the results of viewHooks without changing what it returns", () => {
+    const hooks = viewHooks();
+    hooks.hookCounter = 5;
+    expect(hooks).toEqual({ hooks: [], hookCounter: 5 });
+    expect(viewHooks()).toEqual({ hooks: [], hookCounter: null });
+  });
+  test("We can run functions using withHooks that help manage the hook state.", () => {
+    withHooks(
+      (_, __) => {
+        expect(viewHooks()).toEqual({ hooks: [], hookCounter: 0 });
+      },
+      "hello",
+      getRoot()
+    );
+    expect(viewHooks()).toEqual({ hooks: [], hookCounter: null });
+  });
+  test("Our withHooks method is exception safe", () => {
+    expect(() => {
+      withHooks(
+        (_, __) => {
+          throw new Error("SOMETHING BAD HAPPENED!");
+        },
+        "hello",
+        getRoot()
+      );
+    }).toThrow();
+    expect(viewHooks()).toEqual({ hooks: [], hookCounter: null });
+  });
+  test("Our withHooks method always clears the DomNode passed", () => {
+    const el = document.createElement("p");
+    getRoot().appendChild(el);
+    expect(document.body.innerHTML).toBe(`<div id="app"><p></p></div>`);
+    expect(() => {
+      withHooks(
+        (_, __) => {
+          throw new Error("SOMETHING BAD HAPPENED!");
+        },
+        "hello",
+        getRoot()
+      );
+    }).toThrow();
+    expect(viewHooks()).toEqual({ hooks: [], hookCounter: null });
+    expect(document.body.innerHTML).toBe(`<div id="app"></div>`);
+  });
+});
 
 describe("Removing children from a DOM node", () => {
   test("Works when the DOM node is empty", () => {

@@ -17,13 +17,29 @@ type VirtualDom = DomObject | string;
 type InternalHook = object;
 
 interface HookState {
-  hooks: InternalHook[] | null;
+  hooks: InternalHook[];
   hookCounter: number | null;
 }
 
 const HOOK_STATE: HookState = {
-  hooks: null,
+  hooks: [],
   hookCounter: null,
+};
+
+export const viewHooks = () => ({ ...HOOK_STATE });
+
+export const withHooks = <T>(
+  fn: RenderFunction<T>,
+  tree: T,
+  domNode: HTMLElement
+): void => {
+  removeChildren(domNode);
+  HOOK_STATE.hookCounter = 0;
+  try {
+    fn(tree, domNode);
+  } finally {
+    HOOK_STATE.hookCounter = null;
+  }
 };
 
 const throwOnBadChild: RenderFunction<any> = (badChild) => {
@@ -50,17 +66,7 @@ const renderDomObject: RenderFunction<DomObject> = (tree, domNode) => {
   }
 };
 
-/**
- * TODO: Find some way to look at the state of the hooks and decide whether
- * or not we want to re-render everything.
- */
-const clearDomWhenResettingHooks = (domNode: HTMLElement): void => {
-  console.log(domNode);
-  console.log(HOOK_STATE);
-};
-
-export const render: RenderFunction<VirtualDom> = (tree, domNode) => {
-  clearDomWhenResettingHooks(domNode);
+const paintDomToScreen: RenderFunction<VirtualDom> = (tree, domNode) => {
   switch (typeof tree) {
     case "string": {
       return renderDomString(tree, domNode);
@@ -72,6 +78,13 @@ export const render: RenderFunction<VirtualDom> = (tree, domNode) => {
       return throwOnBadChild(tree, domNode);
     }
   }
+};
+
+export const render: RenderFunction<VirtualDom> = (tree, domNode) => {
+  if (HOOK_STATE.hookCounter === null) {
+    return withHooks(paintDomToScreen, tree, domNode);
+  }
+  return paintDomToScreen(tree, domNode);
 };
 
 export const createElement = (
