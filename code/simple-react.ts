@@ -6,6 +6,8 @@ export const removeChildren = (domNode: HTMLElement): void => {
 
 type Props = Record<string, string | ((e: Event) => void)>;
 
+export type Component<T = any> = (args: T) => DomObject;
+
 type Children = DomObject[] | string;
 
 interface DomObject {
@@ -104,14 +106,19 @@ export const render: RenderFunction<VirtualDom> = (tree, domNode) => {
 };
 
 export const createElement = (
-  tagName: string,
+  tagName: string | Component,
   props?: Props | null,
   children?: DomObject[] | string
-): DomObject => ({
-  tagName,
-  props: props || {},
-  children: children || "",
-});
+): DomObject => {
+  if (typeof tagName === "string") {
+    return {
+      tagName,
+      props: props || {},
+      children: children || "",
+    };
+  }
+  return tagName(props);
+};
 
 if (!globalThis.process) {
   // eslint-disable-next-line no-console

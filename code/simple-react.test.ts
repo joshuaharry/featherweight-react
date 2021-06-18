@@ -5,6 +5,7 @@ import {
   createElement as h,
   viewHooks,
   withHooks,
+  Component,
 } from "./simple-react";
 
 beforeEach(() => {
@@ -140,6 +141,28 @@ describe("Creating DOM elements", () => {
       ],
     });
   });
+  test("Works with a component that does not take props", () => {
+    const MyComponent = () => h("p");
+    const el = h(MyComponent);
+    expect(el).toEqual({
+      tagName: "p",
+      props: {},
+      children: "",
+    });
+  });
+  test("Works with a component that takes props", () => {
+    interface ComponentProps {
+      classname: string;
+    }
+    const MyComponent: Component<ComponentProps> = ({ classname }) =>
+      h("p", { classname });
+    const el = h(MyComponent, { classname: "blue" });
+    expect(el).toEqual({
+      tagName: "p",
+      props: { classname: "blue" },
+      children: "",
+    });
+  });
 });
 
 describe("Rendering to the Virtual DOM", () => {
@@ -191,6 +214,24 @@ describe("Rendering to the Virtual DOM", () => {
     render(h("p", null, "Hello, world!"), getRoot());
     expect(document.body.innerHTML).toBe(
       `<div id="app"><p>Hello, world!</p></div>`
+    );
+  });
+  test("We can render a component", () => {
+    const MyComponent = () => h("p", null, "Hello, components!");
+    render(h(MyComponent), getRoot());
+    expect(document.body.innerHTML).toBe(
+      `<div id="app"><p>Hello, components!</p></div>`
+    );
+  });
+  test("We can render a component that takes props", () => {
+    interface MyProps {
+      classname: string;
+    }
+    const MyComponent: Component<MyProps> = ({ classname }) =>
+      h("p", { classname }, "Hello, props!");
+    render(h(MyComponent, { classname: "blue" }), getRoot());
+    expect(document.body.innerHTML).toBe(
+      `<div id="app"><p classname="blue">Hello, props!</p></div>`
     );
   });
 });
