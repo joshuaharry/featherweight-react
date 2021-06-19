@@ -1,6 +1,8 @@
 # Simple React
 
-An extremely simple React implementation.
+An extremely simple implementation of some core parts of the React API.
+
+Right now, this is a learning project to better understand how JSX and the virtual DOM work. We might extend it later into a more useful library.
 
 ## Hot Reloading
 
@@ -22,6 +24,6 @@ npm run test
 
 Run:
 
-```
+```sh
 npm run build
 ```
