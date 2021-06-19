@@ -33,7 +33,18 @@ type RenderFunction<T> = (tree: T, domNode: HTMLElement) => void;
 
 type VirtualDom = DomObject | string;
 
-type InternalHook = object;
+interface StateCall<T = any> {
+  hookType: "useState";
+  state: T;
+}
+
+interface EffectCall {
+  hookType: "useEffect";
+  dependencies: Array<any>;
+  effect: () => void | Promise<void>;
+}
+
+type InternalHook = StateCall | EffectCall;
 
 interface HookState {
   hooks: InternalHook[];
