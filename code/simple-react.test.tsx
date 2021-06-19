@@ -1,3 +1,4 @@
+/* @jsx h */
 import "@testing-library/jest-dom";
 import {
   render,
@@ -263,6 +264,13 @@ describe("Rendering to the Virtual DOM", () => {
     render(h(App, null), getRoot());
     expect(document.body.innerHTML).toBe(
       `<div id="app"><div><p classname="blue">Hello, world!</p><p classname="purple">Welcome to a very simple React clone.</p><div classname="green"><p>This system is designed to help us get started understanding the semantics of renders.</p><p classname="yellow">Let's get to it!</p></div></div></div>`
+    );
+  });
+  test("We can render a component using JSX", () => {
+    const App = () => <h1>Hello, world!</h1>;
+    render(<App />, getRoot());
+    expect(document.body.innerHTML).toBe(
+      `<div id="app"><h1>Hello, world!</h1></div>`
     );
   });
 });

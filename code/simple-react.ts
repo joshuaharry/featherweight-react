@@ -1,3 +1,11 @@
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      [name: string]: any;
+    }
+  }
+}
+
 export const removeChildren = (domNode: HTMLElement): void => {
   while (domNode.firstChild) {
     domNode.removeChild(domNode.firstChild);
