@@ -104,7 +104,7 @@ describe("Creating DOM elements", () => {
     expect(node).toEqual({
       tagName: "p",
       props: { classname: "pink" },
-      children: "Hello!",
+      children: ["Hello!"],
     });
   });
   test("Works even if the children are not technically specified", () => {
@@ -112,7 +112,7 @@ describe("Creating DOM elements", () => {
     expect(node).toEqual({
       tagName: "p",
       props: {},
-      children: "",
+      children: [],
     });
   });
   test("Works when the props include an event handler", () => {
@@ -121,10 +121,12 @@ describe("Creating DOM elements", () => {
     expect(node.props.onchange).toBe(onChange);
   });
   test("Works when you nest the elements", () => {
-    const node = h("div", null, [
+    const node = h(
+      "div",
+      null,
       h("p", null, "Hello, world!"),
-      h("p", null, "This is a DOM object!"),
-    ]);
+      h("p", null, "This is a DOM object!")
+    );
     expect(node).toEqual({
       tagName: "div",
       props: {},
@@ -132,12 +134,12 @@ describe("Creating DOM elements", () => {
         {
           tagName: "p",
           props: {},
-          children: "Hello, world!",
+          children: ["Hello, world!"],
         },
         {
           tagName: "p",
           props: {},
-          children: "This is a DOM object!",
+          children: ["This is a DOM object!"],
         },
       ],
     });
@@ -148,7 +150,7 @@ describe("Creating DOM elements", () => {
     expect(el).toEqual({
       tagName: "p",
       props: {},
-      children: "",
+      children: [],
     });
   });
   test("Works with a component that takes props", () => {
@@ -161,7 +163,7 @@ describe("Creating DOM elements", () => {
     expect(el).toEqual({
       tagName: "p",
       props: { classname: "blue" },
-      children: "",
+      children: [],
     });
   });
 });
@@ -200,10 +202,12 @@ describe("Rendering to the Virtual DOM", () => {
   });
   test("We can recursively render VDOM children.", () => {
     render(
-      h("div", null, [
+      h(
+        "div",
+        null,
         h("p", null, "Hello, world!"),
-        h("p", { classname: "green" }, "Welcome to a very simple React!"),
-      ]),
+        h("p", { classname: "green" }, "Welcome to a very simple React!")
+      ),
       getRoot()
     );
     expect(document.body.innerHTML).toBe(
@@ -241,25 +245,29 @@ describe("Rendering to the Virtual DOM", () => {
       secondColor: string;
     }
     const About: Component<AboutProps> = ({ firstColor, secondColor }) => {
-      return h("div", { classname: firstColor }, [
+      return h(
+        "div",
+        { classname: firstColor },
         h(
           "p",
           null,
           "This system is designed to help us get started understanding the semantics of renders."
         ),
-        h("p", { classname: secondColor }, `Let's get to it!`),
-      ]);
+        h("p", { classname: secondColor }, `Let's get to it!`)
+      );
     };
     const App = () => {
-      return h("div", null, [
+      return h(
+        "div",
+        null,
         h("p", { classname: "blue" }, "Hello, world!"),
         h(
           "p",
           { classname: "purple" },
           "Welcome to a very simple React clone."
         ),
-        h<AboutProps>(About, { firstColor: "green", secondColor: "yellow" }),
-      ]);
+        h<AboutProps>(About, { firstColor: "green", secondColor: "yellow" })
+      );
     };
     render(h(App, null), getRoot());
     expect(document.body.innerHTML).toBe(
@@ -271,6 +279,18 @@ describe("Rendering to the Virtual DOM", () => {
     render(<App />, getRoot());
     expect(document.body.innerHTML).toBe(
       `<div id="app"><h1>Hello, world!</h1></div>`
+    );
+  });
+  test("We can nest JSX components as we wish", () => {
+    const App = () => (
+      <div>
+        <h1>Hello, world!</h1>
+        <h2 class="blue">We have nested JSX!</h2>
+      </div>
+    );
+    render(<App />, getRoot());
+    expect(document.body.innerHTML).toBe(
+      `<div id="app"><div><h1>Hello, world!</h1><h2 class="blue">We have nested JSX!</h2></div></div>`
     );
   });
 });

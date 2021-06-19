@@ -12,11 +12,11 @@ export const removeChildren = (domNode: HTMLElement): void => {
   }
 };
 
-export type Component<T> = (args: T) => DomObject;
+export type Component<T> = (args: T) => DomObject<T>;
 
-type Children<T = any> = DomObject<T>[] | string;
+type Children = Array<DomObject | string>;
 
-export interface DomObject<T = any> {
+export interface DomObject<T = unknown> {
   tagName: string;
   props: T;
   children: Children;
@@ -25,8 +25,8 @@ export interface DomObject<T = any> {
 export const createElement = <T>(
   tagName: string | Component<T>,
   props: T,
-  children?: DomObject<any>[] | string
-): DomObject => {
+  ...children: Children
+): DomObject<any> => {
   if (typeof tagName === "string") {
     return {
       tagName,
@@ -87,10 +87,11 @@ const throwOnBadChild: RenderFunction<any> = (badChild) => {
 };
 
 const renderString: RenderFunction<string> = (tree, domNode) => {
-  domNode.innerHTML = tree;
+  domNode.textContent += tree;
 };
 
-const assignProps = <T>(props: T, domNode: HTMLElement) => {
+const assignProps = <T>(props: T | null, domNode: HTMLElement) => {
+  if (!props) return;
   Object.entries(props).forEach(([key, value]) => {
     if (typeof value === "string") {
       domNode.setAttribute(key, value);
