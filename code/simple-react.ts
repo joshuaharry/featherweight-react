@@ -39,7 +39,7 @@ export const createElement = <T>(
 
 type RenderFunction<T> = (tree: T, domNode: HTMLElement) => void;
 
-type VirtualDom = DomObject | string;
+type VirtualDom = DomObject | string | Component<null>;
 
 interface StateCall<T = any> {
   hookType: "useState";
@@ -56,15 +56,21 @@ type InternalHook = StateCall | EffectCall;
 
 interface HookState {
   hooks: InternalHook[];
-  hookCounter: number | null;
+  counter: number | null;
+  rerender: () => void;
 }
 
 const HOOK_STATE: HookState = {
   hooks: [],
-  hookCounter: null,
+  counter: null,
+  rerender() {},
 };
 
-export const viewHooks = () => ({ ...HOOK_STATE });
+export const resetHooks = () => {
+  HOOK_STATE.hooks = [];
+  HOOK_STATE.counter = null;
+  HOOK_STATE.rerender = () => {};
+};
 
 export const withHooks = <T>(
   fn: RenderFunction<T>,
@@ -72,11 +78,13 @@ export const withHooks = <T>(
   domNode: HTMLElement
 ): void => {
   removeChildren(domNode);
-  HOOK_STATE.hookCounter = 0;
+  HOOK_STATE.counter = 0;
+  HOOK_STATE.rerender = () =>
+    render(tree as unknown as Component<null>, domNode);
   try {
     fn(tree, domNode);
   } finally {
-    HOOK_STATE.hookCounter = null;
+    HOOK_STATE.counter = null;
   }
 };
 
@@ -125,6 +133,9 @@ const paintDomToScreen: RenderFunction<VirtualDom> = (tree, domNode) => {
     case "object": {
       return renderObject(tree, domNode);
     }
+    case "function": {
+      return render(tree(null), domNode);
+    }
     default: {
       return throwOnBadChild(tree, domNode);
     }
@@ -132,10 +143,27 @@ const paintDomToScreen: RenderFunction<VirtualDom> = (tree, domNode) => {
 };
 
 export const render: RenderFunction<VirtualDom> = (tree, domNode) => {
-  if (HOOK_STATE.hookCounter === null) {
+  if (HOOK_STATE.counter === null) {
     return withHooks(paintDomToScreen, tree, domNode);
   }
   return paintDomToScreen(tree, domNode);
+};
+
+export const useState = <T>(initialState: T): [T, (newState: T) => void] => {
+  if (HOOK_STATE.counter === null) {
+    throw new Error("You must use a hook inside a component!");
+  }
+  const { hooks, counter, rerender } = HOOK_STATE;
+  const setState = (newState: T): void => {
+    hooks[counter] = { hookType: "useState", state: newState };
+    rerender();
+  };
+  if (hooks[counter] === undefined) {
+    hooks.push({ hookType: "useState", state: initialState });
+  }
+  const { state } = hooks[counter] as StateCall;
+  HOOK_STATE.counter += 1;
+  return [state, setState];
 };
 
 if (!globalThis.process) {

@@ -1,16 +1,19 @@
 /* @jsx h */
 import "@testing-library/jest-dom";
+import { fireEvent } from "@testing-library/dom";
 import {
   render,
   removeChildren,
   createElement as h,
-  viewHooks,
   withHooks,
   Component,
+  useState,
+  resetHooks,
 } from "./simple-react";
 
 beforeEach(() => {
   document.body.innerHTML = `<div id="app"></div>`;
+  resetHooks();
 });
 
 const getRoot = (): HTMLDivElement => {
@@ -22,40 +25,14 @@ const getRoot = (): HTMLDivElement => {
 };
 
 describe("Our hook state", () => {
-  test("We can view our current hook state for debugging purposes", () => {
-    expect(viewHooks()).toEqual({ hooks: [], hookCounter: null });
+  test("withHooks clears the DOM node you pass it in preparation for render", () => {
+    getRoot().appendChild(document.createElement("p"));
+    expect(document.body.innerHTML).toBe(`<div id="app"><p></p></div>`);
+    withHooks((_, __) => {}, "hello", getRoot());
+    expect(document.body.innerHTML).toBe(`<div id="app"></div>`);
   });
-  test("We can safely modify the results of viewHooks without changing what it returns", () => {
-    const hooks = viewHooks();
-    hooks.hookCounter = 5;
-    expect(hooks).toEqual({ hooks: [], hookCounter: 5 });
-    expect(viewHooks()).toEqual({ hooks: [], hookCounter: null });
-  });
-  test("We can run functions using withHooks that help manage the hook state.", () => {
-    withHooks(
-      (_, __) => {
-        expect(viewHooks()).toEqual({ hooks: [], hookCounter: 0 });
-      },
-      "hello",
-      getRoot()
-    );
-    expect(viewHooks()).toEqual({ hooks: [], hookCounter: null });
-  });
-  test("Our withHooks method is exception safe", () => {
-    expect(() => {
-      withHooks(
-        (_, __) => {
-          throw new Error("SOMETHING BAD HAPPENED!");
-        },
-        "hello",
-        getRoot()
-      );
-    }).toThrow();
-    expect(viewHooks()).toEqual({ hooks: [], hookCounter: null });
-  });
-  test("Our withHooks method always clears the DomNode passed", () => {
-    const el = document.createElement("p");
-    getRoot().appendChild(el);
+  test("withHooks clears the DOM node even when the inner function throws an exception", () => {
+    getRoot().appendChild(document.createElement("p"));
     expect(document.body.innerHTML).toBe(`<div id="app"><p></p></div>`);
     expect(() => {
       withHooks(
@@ -66,8 +43,21 @@ describe("Our hook state", () => {
         getRoot()
       );
     }).toThrow();
-    expect(viewHooks()).toEqual({ hooks: [], hookCounter: null });
     expect(document.body.innerHTML).toBe(`<div id="app"></div>`);
+  });
+  test("Mutations to the DOM from within withHooks succeed", () => {
+    getRoot().appendChild(document.createElement("p"));
+    expect(document.body.innerHTML).toBe(`<div id="app"><p></p></div>`);
+    withHooks(
+      (_, __) => {
+        const header = document.createElement("h1");
+        header.textContent = "Hello!";
+        getRoot().appendChild(header);
+      },
+      "hello",
+      getRoot()
+    );
+    expect(document.body.innerHTML).toBe(`<div id="app"><h1>Hello!</h1></div>`);
   });
 });
 
@@ -292,5 +282,110 @@ describe("Rendering to the Virtual DOM", () => {
     expect(document.body.innerHTML).toBe(
       `<div id="app"><div><h1>Hello, world!</h1><h2 class="blue">We have nested JSX!</h2></div></div>`
     );
+  });
+  test("We can render functions to the DOM", () => {
+    const App: Component<null> = () => (
+      <div>
+        <h1>Hello, world!</h1>
+        <h2 class="blue">We have nested JSX!</h2>
+      </div>
+    );
+    render(App, getRoot());
+    expect(document.body.innerHTML).toBe(
+      `<div id="app"><div><h1>Hello, world!</h1><h2 class="blue">We have nested JSX!</h2></div></div>`
+    );
+  });
+});
+
+describe("Our useState hook", () => {
+  test("Lets us put a bit of state into the DOM", () => {
+    const App: Component<null> = () => {
+      const [name] = useState("Eva Lu Ator");
+      return (
+        <div>
+          <h1 id="name">{name}</h1>
+        </div>
+      );
+    };
+    render(App, getRoot());
+    expect(document.getElementById("name")?.textContent).toBe("Eva Lu Ator");
+  });
+  test("We can modify the bit of state useState gives us", () => {
+    const App: Component<null> = () => {
+      const [name, setName] = useState("Eva Lu Ator");
+      return (
+        <div>
+          <h1 id="name">{name}</h1>
+          <button
+            id="change-name"
+            onclick={() => setName("Louis Reasoner")}
+            type="button"
+          >
+            Change the name!
+          </button>
+        </div>
+      );
+    };
+    render(App, getRoot());
+    const button = document.getElementById("change-name");
+    if (!button) {
+      throw new Error("Expected DOM to contain change-name button");
+    }
+    fireEvent.click(button);
+    expect(document.getElementById("name")?.textContent).toBe("Louis Reasoner");
+  });
+  test("We can have multiple bits of state on a page", () => {
+    interface NameChangerProps {
+      name: string;
+      id: string;
+      onclick: () => void;
+    }
+    const NameChanger: Component<NameChangerProps> = ({
+      id,
+      name,
+      onclick,
+    }) => {
+      return (
+        <div>
+          <h1 id={id}>{name}</h1>
+          <button onclick={onclick} id={`change-${id}`} type="button">
+            Change the name!
+          </button>
+        </div>
+      );
+    };
+    const App: Component<null> = () => {
+      const [firstName, setFirstName] = useState("Bob");
+      const [secondName, setSecondName] = useState("the Builder");
+      return (
+        <div>
+          <NameChanger
+            name={firstName}
+            id="first-name"
+            onclick={() => {
+              setFirstName("Dora");
+            }}
+          />
+          <NameChanger
+            name={secondName}
+            id="second-name"
+            onclick={() => {
+              setSecondName("the Explorer");
+            }}
+          />
+        </div>
+      );
+    };
+    render(App, getRoot());
+    expect(document.getElementById("first-name")?.textContent).toBe("Bob");
+    expect(document.getElementById("second-name")?.textContent).toBe(
+      "the Builder"
+    );
+    const button = document.getElementById("change-first-name");
+    if (!button) {
+      throw new Error("Expected DOM to contain change-name button");
+    }
+    fireEvent.click(button);
+    expect(document.getElementById("first-name")?.textContent).toBe("Dora");
   });
 });

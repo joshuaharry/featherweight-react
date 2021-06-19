@@ -46,7 +46,8 @@
           "argsIgnorePattern": "^_"
         }
       ],
-      "react/no-unknown-property": "off"
+      "react/no-unknown-property": "off",
+      "react/prop-types": "off"
     }
   },
   "devDependencies": {
