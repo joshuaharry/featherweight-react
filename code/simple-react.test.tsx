@@ -13,7 +13,7 @@ beforeEach(() => {
 });
 
 const getRoot = (): HTMLDivElement => {
-  const app = <HTMLDivElement>document.getElementById("app");
+  const app = document.getElementById("app") as HTMLDivElement;
   if (app === null) {
     throw new Error("CANNOT FIND APP ROOT");
   }
@@ -117,7 +117,7 @@ describe("Creating DOM elements", () => {
   test("Works when the props include an event handler", () => {
     const onChange = (_: Event) => {};
     const node = h("p", { onchange: onChange });
-    expect(node.props["onchange"]).toBe(onChange);
+    expect(node.props.onchange).toBe(onChange);
   });
   test("Works when you nest the elements", () => {
     const node = h("div", null, [
@@ -234,4 +234,5 @@ describe("Rendering to the Virtual DOM", () => {
       `<div id="app"><p classname="blue">Hello, props!</p></div>`
     );
   });
+  test("We can render a rather complicated tree with JSX", () => {});
 });

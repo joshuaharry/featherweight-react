@@ -1,11 +1,12 @@
 {
-  "include": ["code/**/*.ts"],
+  "include": ["code/**/*.ts", "code/**/*.tsx"],
   "exclude": ["node_modules"],
   "compilerOptions": {
     "outDir": "./public",
     "target": "es2020",
     "module": "es2020",
-    "jsx": "react-jsx",
+    "jsx": "react",
+    "jsxFactory": "h",
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,

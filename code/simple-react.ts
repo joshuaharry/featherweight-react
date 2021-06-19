@@ -4,17 +4,30 @@ export const removeChildren = (domNode: HTMLElement): void => {
   }
 };
 
-type Props = Record<string, string | ((e: Event) => void)>;
-
 export type Component<T = any> = (args: T) => DomObject;
 
-type Children = DomObject[] | string;
+type Children<T = any> = DomObject<T>[] | string;
 
-interface DomObject {
+interface DomObject<T = any> {
   tagName: string;
-  props: Props;
+  props: T;
   children: Children;
 }
+
+export const createElement = <T>(
+  tagName: string | Component<T>,
+  props?: T | null,
+  children?: DomObject<any>[] | string
+): DomObject => {
+  if (typeof tagName === "string") {
+    return {
+      tagName,
+      props: props || {},
+      children: children || "",
+    };
+  }
+  return tagName(<T>props);
+};
 
 type RenderFunction<T> = (tree: T, domNode: HTMLElement) => void;
 
@@ -58,7 +71,7 @@ const renderString: RenderFunction<string> = (tree, domNode) => {
   domNode.innerHTML = tree;
 };
 
-const assignProps = (props: Props, domNode: HTMLElement) => {
+const assignProps = <T>(props: T, domNode: HTMLElement) => {
   Object.entries(props).forEach(([key, value]) => {
     if (typeof value === "string") {
       domNode.setAttribute(key, value);
@@ -103,21 +116,6 @@ export const render: RenderFunction<VirtualDom> = (tree, domNode) => {
     return withHooks(paintDomToScreen, tree, domNode);
   }
   return paintDomToScreen(tree, domNode);
-};
-
-export const createElement = (
-  tagName: string | Component,
-  props?: Props | null,
-  children?: DomObject[] | string
-): DomObject => {
-  if (typeof tagName === "string") {
-    return {
-      tagName,
-      props: props || {},
-      children: children || "",
-    };
-  }
-  return tagName(props);
 };
 
 if (!globalThis.process) {
