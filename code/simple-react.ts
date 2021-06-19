@@ -4,7 +4,7 @@ export const removeChildren = (domNode: HTMLElement): void => {
   }
 };
 
-export type Component<T = any> = (args: T) => DomObject;
+export type Component<T> = (args: T) => DomObject;
 
 type Children<T = any> = DomObject<T>[] | string;
 
@@ -16,7 +16,7 @@ export interface DomObject<T = any> {
 
 export const createElement = <T>(
   tagName: string | Component<T>,
-  props?: T | null,
+  props: T,
   children?: DomObject<any>[] | string
 ): DomObject => {
   if (typeof tagName === "string") {
@@ -26,7 +26,7 @@ export const createElement = <T>(
       children: children || "",
     };
   }
-  return tagName(<T>props);
+  return tagName(props);
 };
 
 type RenderFunction<T> = (tree: T, domNode: HTMLElement) => void;

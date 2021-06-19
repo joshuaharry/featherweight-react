@@ -218,7 +218,7 @@ describe("Rendering to the Virtual DOM", () => {
   });
   test("We can render a component", () => {
     const MyComponent = () => h("p", null, "Hello, components!");
-    render(h(MyComponent), getRoot());
+    render(h(MyComponent, {}), getRoot());
     expect(document.body.innerHTML).toBe(
       `<div id="app"><p>Hello, components!</p></div>`
     );
