@@ -106,8 +106,8 @@ describe("Creating DOM elements", () => {
       children: "Hello!",
     });
   });
-  test("Works when elements get left unspecified", () => {
-    const node = h("p");
+  test("Works even if the children are not technically specified", () => {
+    const node = h("p", null);
     expect(node).toEqual({
       tagName: "p",
       props: {},
@@ -142,8 +142,8 @@ describe("Creating DOM elements", () => {
     });
   });
   test("Works with a component that does not take props", () => {
-    const MyComponent = () => h("p");
-    const el = h(MyComponent);
+    const MyComponent = () => h("p", null);
+    const el = h(MyComponent, null);
     expect(el).toEqual({
       tagName: "p",
       props: {},
@@ -234,5 +234,35 @@ describe("Rendering to the Virtual DOM", () => {
       `<div id="app"><p classname="blue">Hello, props!</p></div>`
     );
   });
-  test("We can render a rather complicated tree with JSX", () => {});
+  test("We can render a big, complicated component tree", () => {
+    interface AboutProps {
+      firstColor: string;
+      secondColor: string;
+    }
+    const About: Component<AboutProps> = ({ firstColor, secondColor }) => {
+      return h("div", { classname: firstColor }, [
+        h(
+          "p",
+          null,
+          "This system is designed to help us get started understanding the semantics of renders."
+        ),
+        h("p", { classname: secondColor }, `Let's get to it!`),
+      ]);
+    };
+    const App = () => {
+      return h("div", null, [
+        h("p", { classname: "blue" }, "Hello, world!"),
+        h(
+          "p",
+          { classname: "purple" },
+          "Welcome to a very simple React clone."
+        ),
+        h<AboutProps>(About, { firstColor: "green", secondColor: "yellow" }),
+      ]);
+    };
+    render(h(App, null), getRoot());
+    expect(document.body.innerHTML).toBe(
+      `<div id="app"><div><p classname="blue">Hello, world!</p><p classname="purple">Welcome to a very simple React clone.</p><div classname="green"><p>This system is designed to help us get started understanding the semantics of renders.</p><p classname="yellow">Let's get to it!</p></div></div></div>`
+    );
+  });
 });

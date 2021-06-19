@@ -8,7 +8,7 @@ export type Component<T = any> = (args: T) => DomObject;
 
 type Children<T = any> = DomObject<T>[] | string;
 
-interface DomObject<T = any> {
+export interface DomObject<T = any> {
   tagName: string;
   props: T;
   children: Children;
