@@ -17,6 +17,9 @@
   "license": "MIT",
   "jest": {
     "preset": "ts-jest",
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
     "testEnvironment": "jsdom",
     "resetMocks": true,
     "testPathIgnorePatterns": [

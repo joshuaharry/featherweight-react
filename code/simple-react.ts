@@ -167,6 +167,46 @@ export const useState = <T>(initialState: T): [T, (newState: T) => void] => {
 };
 
 if (!globalThis.process) {
-  // eslint-disable-next-line no-console
-  console.log("Hello, Simple React!");
+  interface NameChangerProps {
+    name: string;
+    id: string;
+    onclick: () => void;
+  }
+  const NameChanger: Component<NameChangerProps> = ({ id, name, onclick }) => {
+    return createElement(
+      "div",
+      null,
+      createElement("h1", { id }, name),
+      createElement(
+        "button",
+        { onclick, id: `change-${id}`, type: "button" },
+        "Change the name!"
+      )
+    );
+  };
+  const App: Component<null> = () => {
+    const [firstName, setFirstName] = useState("Bob");
+    const [secondName, setSecondName] = useState("the Builder");
+    return createElement(
+      "div",
+      null,
+      createElement(NameChanger, {
+        name: firstName,
+        id: "first-name",
+        onclick: () => {
+          setFirstName(firstName === "Bob" ? "Dora" : "Bob");
+        },
+      }),
+      createElement(NameChanger, {
+        name: secondName,
+        id: "second-name",
+        onclick: () => {
+          setSecondName(
+            secondName === "the Builder" ? "the Explorer" : "the Builder"
+          );
+        },
+      })
+    );
+  };
+  render(App, document.getElementById("app")!);
 }

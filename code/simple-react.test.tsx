@@ -16,13 +16,15 @@ beforeEach(() => {
   resetHooks();
 });
 
-const getRoot = (): HTMLDivElement => {
-  const app = document.getElementById("app") as HTMLDivElement;
-  if (app === null) {
-    throw new Error("CANNOT FIND APP ROOT");
+const getById = (id: string): HTMLElement => {
+  const el = document.getElementById(id);
+  if (!el) {
+    throw new Error(`COULD NOT FIND ELEMENT WITH ID '${id}' IN THE DOM`);
   }
-  return app;
+  return el;
 };
+
+const getRoot = (): HTMLDivElement => getById("app") as HTMLDivElement;
 
 describe("Our hook state", () => {
   test("withHooks clears the DOM node you pass it in preparation for render", () => {
@@ -327,10 +329,7 @@ describe("Our useState hook", () => {
       );
     };
     render(App, getRoot());
-    const button = document.getElementById("change-name");
-    if (!button) {
-      throw new Error("Expected DOM to contain change-name button");
-    }
+    const button = getById("change-name");
     fireEvent.click(button);
     expect(document.getElementById("name")?.textContent).toBe("Louis Reasoner");
   });
@@ -363,29 +362,37 @@ describe("Our useState hook", () => {
             name={firstName}
             id="first-name"
             onclick={() => {
-              setFirstName("Dora");
+              setFirstName(firstName === "Bob" ? "Dora" : "Bob");
             }}
           />
           <NameChanger
             name={secondName}
             id="second-name"
             onclick={() => {
-              setSecondName("the Explorer");
+              setSecondName(
+                secondName === "the Builder" ? "the Explorer" : "the Builder"
+              );
             }}
           />
         </div>
       );
     };
     render(App, getRoot());
+    const firstNameButton = getById("change-first-name");
+    const secondNameButton = getById("change-second-name");
     expect(document.getElementById("first-name")?.textContent).toBe("Bob");
     expect(document.getElementById("second-name")?.textContent).toBe(
       "the Builder"
     );
-    const button = document.getElementById("change-first-name");
-    if (!button) {
-      throw new Error("Expected DOM to contain change-name button");
-    }
-    fireEvent.click(button);
+    fireEvent.click(secondNameButton);
+    expect(document.getElementById("first-name")?.textContent).toBe("Bob");
+    expect(document.getElementById("second-name")?.textContent).toBe(
+      "the Explorer"
+    );
+    fireEvent.click(firstNameButton);
     expect(document.getElementById("first-name")?.textContent).toBe("Dora");
+    expect(document.getElementById("second-name")?.textContent).toBe(
+      "the Explorer"
+    );
   });
 });
