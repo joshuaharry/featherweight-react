@@ -48,8 +48,8 @@ interface StateCall<T = any> {
 
 interface EffectCall {
   hookType: "useEffect";
-  dependencies: Array<any>;
-  effect: () => void | Promise<void>;
+  dependencies: Array<any> | undefined;
+  effect: () => void;
 }
 
 type InternalHook = StateCall | EffectCall;
@@ -147,6 +147,37 @@ export const render: RenderFunction<VirtualDom> = (tree, domNode) => {
     return withHooks(paintDomToScreen, tree, domNode);
   }
   return paintDomToScreen(tree, domNode);
+};
+
+const handleEffect = (
+  effect: EffectCall,
+  newDependencies: Array<any> | undefined
+): void => {
+  if (!Array.isArray(newDependencies)) return effect.effect();
+  const shouldRunEffect = newDependencies.some(
+    (dependency, index) => dependency !== effect?.dependencies?.[index]
+  );
+  if (shouldRunEffect) return effect.effect();
+  return undefined;
+};
+
+export const useEffect = (
+  effectFn: () => void | Promise<void>,
+  deps?: Array<any>
+): void => {
+  if (HOOK_STATE.counter === null) {
+    throw new Error("You must use a hook inside a component!");
+  }
+  const { hooks, counter } = HOOK_STATE;
+  HOOK_STATE.counter += 1;
+  if (hooks[counter] === undefined) {
+    hooks.push({ hookType: "useEffect", effect: effectFn, dependencies: deps });
+    effectFn();
+    return;
+  }
+  const effect = hooks[counter] as EffectCall;
+  handleEffect(effect, deps);
+  effect.dependencies = deps;
 };
 
 export const useState = <T>(initialState: T): [T, (newState: T) => void] => {

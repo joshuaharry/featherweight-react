@@ -8,6 +8,7 @@ import {
   withHooks,
   Component,
   useState,
+  useEffect,
   resetHooks,
 } from "./simple-react";
 
@@ -394,5 +395,74 @@ describe("Our useState hook", () => {
     expect(document.getElementById("second-name")?.textContent).toBe(
       "the Explorer"
     );
+  });
+});
+
+describe("Our useEffect hook", () => {
+  test("Will run a side effect during our render", () => {
+    const fn = jest.fn();
+    const App: Component<null> = () => {
+      useEffect(() => {
+        fn();
+      });
+      return <h1>Hello!</h1>;
+    };
+    render(App, getRoot());
+    expect(fn).toHaveBeenCalled();
+  });
+  test("When there is no dependency array, we call the effect every time", () => {
+    const fn = jest.fn();
+    const App: Component<null> = () => {
+      useEffect(() => {
+        fn();
+      });
+      return <h1>Hello!</h1>;
+    };
+    render(App, getRoot());
+    render(App, getRoot());
+    render(App, getRoot());
+    render(App, getRoot());
+    expect(fn).toHaveBeenCalledTimes(4);
+  });
+  test("When there is an empty dependency array, we only call the effect once", () => {
+    const fn = jest.fn();
+    const App: Component<null> = () => {
+      useEffect(() => {
+        fn();
+      }, []);
+      return <h1>Hello!</h1>;
+    };
+    render(App, getRoot());
+    render(App, getRoot());
+    render(App, getRoot());
+    render(App, getRoot());
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+  test("When the dependency array has elements inside of it, we call the effect when they change", () => {
+    const fn = jest.fn();
+    const App: Component<null> = () => {
+      const [state, setState] = useState("Hello!");
+      useEffect(() => {
+        fn();
+      }, [state]);
+      return (
+        <div>
+          <h1 id="state">{state}</h1>
+          <button
+            id="effect-button"
+            onclick={() => setState(state === "Hello!" ? "Goodbye!" : "Hello!")}
+            type="button"
+          >
+            Trigger the effect!
+          </button>
+        </div>
+      );
+    };
+    render(App, getRoot());
+    render(App, getRoot());
+    render(App, getRoot());
+    expect(fn).toHaveBeenCalledTimes(1);
+    fireEvent.click(getById("effect-button"));
+    expect(fn).toHaveBeenCalledTimes(2);
   });
 });
