@@ -14,7 +14,7 @@ export const removeChildren = (domNode: HTMLElement): void => {
 
 export type Component<T> = (args: T) => DomObject<T>;
 
-type Children = Array<DomObject | string>;
+type Children = Array<DomObject | string | number>;
 
 export interface DomObject<T = unknown> {
   tagName: string;
@@ -39,7 +39,7 @@ export const createElement = <T>(
 
 type RenderFunction<T> = (tree: T, domNode: HTMLElement) => void;
 
-type VirtualDom = DomObject | string | Component<null>;
+type VirtualDom = DomObject | string | number | Component<null>;
 
 interface StateCall<T = any> {
   hookType: "useState";
@@ -98,6 +98,10 @@ const renderString: RenderFunction<string> = (tree, domNode) => {
   domNode.textContent += tree;
 };
 
+const renderNumber: RenderFunction<number> = (tree, domNode) => {
+  domNode.textContent += tree.toString();
+};
+
 const assignProps = <T>(props: T | null, domNode: HTMLElement) => {
   if (!props) return;
   Object.entries(props).forEach(([key, value]) => {
@@ -110,13 +114,8 @@ const assignProps = <T>(props: T | null, domNode: HTMLElement) => {
   });
 };
 
-const renderChildren = (children: Children, domNode: HTMLElement) => {
-  if (Array.isArray(children)) {
-    children.forEach((child) => render(child, domNode));
-  } else {
-    render(children, domNode);
-  }
-};
+const renderChildren = (children: Children, domNode: HTMLElement) =>
+  children.forEach((child) => render(child, domNode));
 
 const renderObject: RenderFunction<DomObject> = (tree, domNode) => {
   const element = document.createElement(tree.tagName);
@@ -129,6 +128,9 @@ const paintDomToScreen: RenderFunction<VirtualDom> = (tree, domNode) => {
   switch (typeof tree) {
     case "string": {
       return renderString(tree, domNode);
+    }
+    case "number": {
+      return renderNumber(tree, domNode);
     }
     case "object": {
       return renderObject(tree, domNode);

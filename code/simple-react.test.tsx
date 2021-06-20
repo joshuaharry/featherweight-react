@@ -113,6 +113,14 @@ describe("Creating DOM elements", () => {
     const node = h("p", { onchange: onChange });
     expect(node.props.onchange).toBe(onChange);
   });
+  test("Works when the chilren are numbers", () => {
+    const node = h("p", null, 3);
+    expect(node).toEqual({
+      tagName: "p",
+      props: {},
+      children: [3],
+    });
+  });
   test("Works when you nest the elements", () => {
     const node = h(
       "div",
@@ -167,17 +175,22 @@ describe("Rendering to the Virtual DOM", () => {
   });
   /* eslint-disable no-console */
   test("We explode if we try to render something funny to the DOM", () => {
+    const sym = Symbol("stringy");
     const originalError = console.error;
     console.error = jest.fn();
     // @ts-expect-error
-    expect(() => render(5, getRoot())).toThrow("UNEXPECTED");
-    expect(console.error).toHaveBeenCalledWith(5);
+    expect(() => render(sym, getRoot())).toThrow("UNEXPECTED");
+    expect(console.error).toHaveBeenCalledWith(sym);
     console.error = originalError;
   });
   /* eslint-enable no-console */
   test("We can render a string to the DOM.", () => {
     render("Hello!", getRoot());
     expect(document.body.innerHTML).toBe(`<div id="app">Hello!</div>`);
+  });
+  test("We can render a number to the DOM", () => {
+    render(5, getRoot());
+    expect(document.body.innerHTML).toBe(`<div id="app">5</div>`);
   });
   test("We can render a VDOM object to the DOM.", () => {
     render(h("p", null, ""), getRoot());
@@ -284,6 +297,20 @@ describe("Rendering to the Virtual DOM", () => {
     render(<App />, getRoot());
     expect(document.body.innerHTML).toBe(
       `<div id="app"><div><h1>Hello, world!</h1><h2 class="blue">We have nested JSX!</h2></div></div>`
+    );
+  });
+  test("We can render numeric literals in JSX", () => {
+    const App: Component<null> = () => {
+      return (
+        <h1>
+          <p>Hello!</p>
+          <p>3</p>
+        </h1>
+      );
+    };
+    render(App, getRoot());
+    expect(document.body.innerHTML).toBe(
+      `<div id="app"><h1><p>Hello!</p><p>3</p></h1></div>`
     );
   });
   test("We can render functions to the DOM", () => {
@@ -479,7 +506,7 @@ describe("Our useEffect hook", () => {
       return (
         <div>
           <h1 id="state">{state}</h1>
-          <h2 id="counter">{counter.toString()}</h2>
+          <h2 id="counter">{counter}</h2>
           <button id="effect-button" onclick={changeState} type="button">
             Trigger the effect!
           </button>
