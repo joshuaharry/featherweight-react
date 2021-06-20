@@ -465,4 +465,37 @@ describe("Our useEffect hook", () => {
     fireEvent.click(getById("effect-button"));
     expect(fn).toHaveBeenCalledTimes(2);
   });
+  test("Our array strategy only looks at the state we pass it", () => {
+    const fn = jest.fn();
+    const App: Component<null> = () => {
+      const [state, setState] = useState("Hello!");
+      const changeState = () =>
+        setState(state === "Hello!" ? "Goodbye!" : "Hello!");
+      const [counter, setCounter] = useState(1);
+      const updateCounter = () => setCounter(counter + 1);
+      useEffect(() => {
+        fn();
+      }, [state]);
+      return (
+        <div>
+          <h1 id="state">{state}</h1>
+          <h2 id="counter">{counter.toString()}</h2>
+          <button id="effect-button" onclick={changeState} type="button">
+            Trigger the effect!
+          </button>
+          <button id="counter-button" onclick={updateCounter} type="button">
+            Update the counter!
+          </button>
+        </div>
+      );
+    };
+    render(App, getRoot());
+    render(App, getRoot());
+    render(App, getRoot());
+    expect(fn).toHaveBeenCalledTimes(1);
+    fireEvent.click(getById("counter-button"));
+    expect(fn).toHaveBeenCalledTimes(1);
+    fireEvent.click(getById("effect-button"));
+    expect(fn).toHaveBeenCalledTimes(2);
+  });
 });
