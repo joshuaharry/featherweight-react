@@ -3,18 +3,24 @@ import * as React from "./simple-react.js";
 const { createElement: h } = React;
 
 const App: React.Component<null> = () => {
-  const [state, setState] = React.useState("Initial state");
+  const [state, setState] = React.useState("Hello!");
+  const changeState = () =>
+    setState(state === "Hello!" ? "Goodbye!" : "Hello!");
+  const [counter, setCounter] = React.useState(1);
+  const updateCounter = () => setCounter(counter + 1);
+  React.useEffect(() => {
+    // eslint-disable-next-line
+    console.log("The effect ran!");
+  }, [state]);
   return (
     <div>
-      <h1>Hello, world!</h1>
-      <h2>{state}</h2>
-      <button
-        type="button"
-        onclick={() =>
-          setState(state === "Initial state" ? "New state" : "Initial state")
-        }
-      >
-        Change the State
+      <h1 id="state">{state}</h1>
+      <h2 id="counter">{counter}</h2>
+      <button id="effect-button" onclick={changeState} type="button">
+        Trigger the effect!
+      </button>
+      <button id="counter-button" onclick={updateCounter} type="button">
+        Update the counter!
       </button>
     </div>
   );
