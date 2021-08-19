@@ -1,28 +1,19 @@
 {
-  "include": ["code/**/*.ts", "code/**/*.tsx"],
-  "exclude": ["node_modules"],
   "compilerOptions": {
-    "outDir": "./public",
-    "target": "es2020",
-    "module": "es2020",
     "jsx": "react",
     "jsxFactory": "h",
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "composite": true,
-    "removeComments": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "lib": ["ESNext", "DOM"],
+    "moduleResolution": "Node",
     "strict": true,
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "noEmit": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
-  }
+    "noImplicitReturns": true
+  },
+  "include": ["./src"]
 }

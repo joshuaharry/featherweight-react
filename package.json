@@ -1,30 +1,37 @@
 {
-  "name": "simple-react",
-  "version": "1.0.0",
-  "description": "Simple React implementation.",
-  "main": "index.js",
-  "scripts": {
-    "start": "concurrently \"tsc --watch --preserveWatchOutput\" \"browser-sync public\"",
-    "test": "jest",
-    "build": "eslint code/* && tsc",
-    "prepare": "husky install",
-    "pretty-quick": "pretty-quick --staged"
-  },
+  "name": "featherweight-react",
+  "description": "Lightweight React implementation designed for experimentation",
+  "author": "Joshua Hoeflich & Tochuwku Eze",
+  "license": "MIT",
   "keywords": [
     "react"
   ],
-  "author": "Joshua Hoeflich & Tochuwku Eze",
-  "license": "MIT",
-  "jest": {
-    "preset": "ts-jest",
-    "transform": {
-      "^.+\\.tsx?$": "ts-jest"
-    },
-    "testEnvironment": "jsdom",
-    "resetMocks": true,
-    "testPathIgnorePatterns": [
-      "public"
-    ]
+  "version": "1.0.1",
+  "scripts": {
+    "start": "vite",
+    "test": "jest",
+    "pretty-quick": "pretty-quick --staged",
+    "build": "tsc && vite build"
+  },
+  "devDependencies": {
+    "typescript": "^4.3.2",
+    "vite": "^2.4.4",
+    "eslint": "^7.28.0",
+    "eslint-config-airbnb-typescript": "^12.3.1",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-jsx-a11y": "^6.4.1",
+    "eslint-plugin-react": "^7.24.0",
+    "eslint-plugin-react-hooks": "^4.2.0",
+    "husky": "^6.0.0",
+    "jest": "^27.0.4",
+    "prettier": "^2.3.1",
+    "pretty-quick": "^3.1.1",
+    "ts-jest": "^27.0.3",
+    "@testing-library/dom": "^7.31.2",
+    "@testing-library/jest-dom": "^5.14.1",
+    "@types/jest": "^26.0.23",
+    "@typescript-eslint/eslint-plugin": "^4.27.0"
   },
   "eslintConfig": {
     "extends": [
@@ -54,25 +61,15 @@
       "react/no-deprecated": "off"
     }
   },
-  "devDependencies": {
-    "@testing-library/dom": "^7.31.2",
-    "@testing-library/jest-dom": "^5.14.1",
-    "@types/jest": "^26.0.23",
-    "@typescript-eslint/eslint-plugin": "^4.27.0",
-    "browser-sync": "^2.26.14",
-    "concurrently": "^6.2.0",
-    "eslint": "^7.28.0",
-    "eslint-config-airbnb-typescript": "^12.3.1",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-import": "^2.23.4",
-    "eslint-plugin-jsx-a11y": "^6.4.1",
-    "eslint-plugin-react": "^7.24.0",
-    "eslint-plugin-react-hooks": "^4.2.0",
-    "husky": "^6.0.0",
-    "jest": "^27.0.4",
-    "prettier": "^2.3.1",
-    "pretty-quick": "^3.1.1",
-    "ts-jest": "^27.0.3",
-    "typescript": "^4.3.4"
+  "jest": {
+    "preset": "ts-jest",
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testEnvironment": "jsdom",
+    "resetMocks": true,
+    "testPathIgnorePatterns": [
+      "public"
+    ]
   }
 }

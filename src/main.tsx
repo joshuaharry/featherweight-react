@@ -1,4 +1,4 @@
-import * as React from "./simple-react.js";
+import * as React from "./simple-react";
 
 const { createElement: h } = React;
 

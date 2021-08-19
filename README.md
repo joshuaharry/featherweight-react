@@ -1,4 +1,4 @@
-# Simple React
+# Featherweight React
 
 An extremely simple implementation of some core parts of the React API.
 
