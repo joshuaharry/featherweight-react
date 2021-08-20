@@ -144,7 +144,27 @@ const paintDomToScreen: RenderFunction<VirtualDom> = (tree, domNode) => {
   }
 };
 
+/* eslint-disable no-console */
+let SHOULD_LOG = false;
+const logBadState = () => {
+  if (HOOK_STATE.hooks.length === 2) {
+    const [hookOne, hookTwo] = HOOK_STATE.hooks;
+    if (hookOne.hookType === "useState" && hookTwo.hookType === "useState") {
+      if (hookOne.state === hookTwo.state) {
+        if (SHOULD_LOG) {
+          console.log("BAD STATE", [hookOne, hookTwo]);
+          SHOULD_LOG = false;
+        }
+      } else {
+        SHOULD_LOG = true;
+      }
+    }
+  }
+};
+/* eslint-disable no-console */
+
 export const render: RenderFunction<VirtualDom> = (tree, domNode) => {
+  logBadState();
   if (HOOK_STATE.counter === null) {
     return withHooks(paintDomToScreen, tree, domNode);
   }

@@ -1,27 +1,38 @@
+/* eslint-disable react/button-has-type */
 import * as React from "./simple-react";
+import "./index.css";
 
 const { createElement: h } = React;
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const App: React.Component<null> = () => {
-  const [state, setState] = React.useState("Hello!");
-  const changeState = () =>
-    setState(state === "Hello!" ? "Goodbye!" : "Hello!");
-  const [counter, setCounter] = React.useState(1);
-  const updateCounter = () => setCounter(counter + 1);
-  React.useEffect(() => {
-    // eslint-disable-next-line
-    console.log("The effect ran!");
-  }, [state]);
+  const [stateA, setStateA] = React.useState(true);
+  const [stateB, setStateB] = React.useState(false);
+  const toggleStates = () => {
+    setStateB(!stateB);
+    setStateA(!stateA);
+  };
+  const toggleDelayed = async () => {
+    setStateB(!stateB);
+    await sleep(500);
+    setStateA(!stateA);
+  };
   return (
-    <div>
-      <h1 id="state">{state}</h1>
-      <h2 id="counter">{counter}</h2>
-      <button id="effect-button" onclick={changeState} type="button">
-        Trigger the effect!
-      </button>
-      <button id="counter-button" onclick={updateCounter} type="button">
-        Update the counter!
-      </button>
+    <div id="container">
+      <h1>Broken Xor Machine</h1>
+      <div id="side-by-side">
+        <div>
+          <h2>State A</h2>
+          <button onclick={toggleStates}>Set State A</button>
+          <h3>{stateA.toString()}</h3>
+        </div>
+        <div>
+          <h2>State B</h2>
+          <button onclick={toggleDelayed}>Set State B</button>
+          <h3>{stateB.toString()}</h3>
+        </div>
+      </div>
     </div>
   );
 };
