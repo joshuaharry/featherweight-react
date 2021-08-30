@@ -10,6 +10,8 @@ import {
   useState,
   useEffect,
   resetHooks,
+  makeStateMachine,
+  lastUniqueState,
 } from "./simple-react";
 
 beforeEach(() => {
@@ -26,6 +28,105 @@ const getById = (id: string): HTMLElement => {
 };
 
 const getRoot = (): HTMLDivElement => getById("app") as HTMLDivElement;
+
+describe("lastUniqueState", () => {
+  beforeEach(() => {
+    lastUniqueState([]);
+  });
+  test("Empty list by default", () => {
+    expect(lastUniqueState([])).toEqual({
+      changed: false,
+      state: [],
+    });
+  });
+  test("Works with a new state", () => {
+    expect(lastUniqueState([{ state: 5, hookType: "useState" }])).toEqual({
+      changed: true,
+      state: [{ state: 5, hookType: "useState" }],
+    });
+    expect(lastUniqueState([{ state: 5, hookType: "useState" }])).toEqual({
+      changed: false,
+      state: [{ state: 5, hookType: "useState" }],
+    });
+  });
+  test("Works with multiple states", () => {
+    expect(
+      lastUniqueState([
+        { state: 5, hookType: "useState" },
+        { state: 6, hookType: "useState" },
+      ])
+    ).toEqual({
+      changed: true,
+      state: [
+        { state: 5, hookType: "useState" },
+        { state: 6, hookType: "useState" },
+      ],
+    });
+    Array.from({ length: 10 }).forEach(() => {
+      expect(
+        lastUniqueState([
+          { state: 5, hookType: "useState" },
+          { state: 6, hookType: "useState" },
+        ])
+      ).toEqual({
+        changed: false,
+        state: [
+          { state: 5, hookType: "useState" },
+          { state: 6, hookType: "useState" },
+        ],
+      });
+    });
+    expect(
+      lastUniqueState([
+        { state: 5, hookType: "useState" },
+        { state: 7, hookType: "useState" },
+      ])
+    ).toEqual({
+      changed: true,
+      state: [
+        { state: 5, hookType: "useState" },
+        { state: 7, hookType: "useState" },
+      ],
+    });
+  });
+});
+
+describe("Our state machine", () => {
+  test("Can be created properly", () => {
+    const stateMachine = makeStateMachine();
+    expect(stateMachine.state).toEqual([
+      { state: true, hookType: "useState" },
+      { state: false, hookType: "useState" },
+    ]);
+  });
+  test("Can be updated once", () => {
+    const stateMachine = makeStateMachine();
+    stateMachine.updateState();
+    expect(stateMachine.state).toEqual([
+      { state: true, hookType: "useState" },
+      { state: true, hookType: "useState" },
+    ]);
+  });
+  test("Can be updated twice", () => {
+    const stateMachine = makeStateMachine();
+    stateMachine.updateState();
+    stateMachine.updateState();
+    expect(stateMachine.state).toEqual([
+      { state: false, hookType: "useState" },
+      { state: true, hookType: "useState" },
+    ]);
+  });
+  test("Can return to the start", () => {
+    const stateMachine = makeStateMachine();
+    for (let i = 0; i < 4; i += 1) {
+      stateMachine.updateState();
+    }
+    expect(stateMachine.state).toEqual([
+      { state: true, hookType: "useState" },
+      { state: false, hookType: "useState" },
+    ]);
+  });
+});
 
 describe("Our hook state", () => {
   test("withHooks clears the DOM node you pass it in preparation for render", () => {

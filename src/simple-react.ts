@@ -144,27 +144,79 @@ const paintDomToScreen: RenderFunction<VirtualDom> = (tree, domNode) => {
   }
 };
 
-/* eslint-disable no-console */
-let SHOULD_LOG = false;
-const logBadState = () => {
-  if (HOOK_STATE.hooks.length === 2) {
-    const [hookOne, hookTwo] = HOOK_STATE.hooks;
-    if (hookOne.hookType === "useState" && hookTwo.hookType === "useState") {
-      if (hookOne.state === hookTwo.state) {
-        if (SHOULD_LOG) {
-          console.log("BAD STATE", [hookOne, hookTwo]);
-          SHOULD_LOG = false;
-        }
-      } else {
-        SHOULD_LOG = true;
-      }
+export const makeStateMachine = () => {
+  function* makeStateGenerator() {
+    while (true) {
+      yield [
+        { state: true, hookType: "useState" },
+        { state: false, hookType: "useState" },
+      ];
+      yield [
+        { state: true, hookType: "useState" },
+        { state: true, hookType: "useState" },
+      ];
+      yield [
+        { state: false, hookType: "useState" },
+        { state: true, hookType: "useState" },
+      ];
+      yield [
+        { state: false, hookType: "useState" },
+        { state: false, hookType: "useState" },
+      ];
     }
   }
+  const stateGenerator = makeStateGenerator();
+  const stateMachine = {
+    state: stateGenerator.next().value,
+    updateState: () => {
+      stateMachine.state = stateGenerator.next().value;
+    },
+  };
+  return stateMachine;
 };
-/* eslint-disable no-console */
+
+const makeLastUniqueState = () => {
+  let lastState: StateCall[] = [];
+  const lastUniqueState = (
+    hooks: StateCall[] = HOOK_STATE.hooks as StateCall[]
+  ) => {
+    for (let i = 0; i < hooks.length; i += 1) {
+      if (hooks[i]?.state !== lastState[i]?.state) {
+        // WARNING: Make sure you *clone* HOOK_STATE.hooks here! If you
+        // do the naive assignment, lastState will *point* to HOOK_STATE.hooks
+        // and you'll never see anything interesting.
+        lastState = [...hooks];
+        return {
+          changed: true,
+          state: lastState,
+        };
+      }
+    }
+    return { changed: false, state: lastState };
+  };
+  return lastUniqueState;
+};
+
+const stateMachine = makeStateMachine();
+
+export const lastUniqueState = makeLastUniqueState();
+
+const check = () => {
+  const reactState = lastUniqueState();
+  if (reactState.changed) {
+    for (let i = 0; i < reactState.state.length; i += 1) {
+      // TypeScript is confused about generators, but this is fine.
+      // @ts-ignore
+      if (reactState.state[i].state !== stateMachine.state[i].state) {
+        throw new Error("STATE MACHINE FAILURE");
+      }
+    }
+    stateMachine.updateState();
+  }
+};
 
 export const render: RenderFunction<VirtualDom> = (tree, domNode) => {
-  logBadState();
+  check();
   if (HOOK_STATE.counter === null) {
     return withHooks(paintDomToScreen, tree, domNode);
   }
