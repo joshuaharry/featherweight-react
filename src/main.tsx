@@ -2,26 +2,44 @@ import * as React from "./simple-react";
 
 const { createElement: h } = React;
 
+const TODOS = [
+  { id: 0, text: "0" },
+  { id: 1, text: "1" },
+  { id: 2, text: "2" },
+  { id: 3, text: "3" },
+  { id: 4, text: "4" },
+  { id: 5, text: "5" },
+  { id: 6, text: "6" },
+];
+
+const delay = (ms: number) => 
+  new Promise(resolve => setTimeout(resolve, ms));
+
 const App: React.Component<null> = () => {
-  const [state, setState] = React.useState("Hello!");
-  const changeState = () =>
-    setState(state === "Hello!" ? "Goodbye!" : "Hello!");
-  const [counter, setCounter] = React.useState(1);
-  const updateCounter = () => setCounter(counter + 1);
-  React.useEffect(() => {
-    // eslint-disable-next-line
-    console.log("The effect ran!");
-  }, [state]);
+  const [counter, setCounter] = React.useState(0);
+  const [todo, setTodo] = React.useState(JSON.stringify(TODOS[counter]));
+  const [loading, setLoading] = React.useState(false);
   return (
     <div>
-      <h1 id="state">{state}</h1>
-      <h2 id="counter">{counter}</h2>
-      <button id="effect-button" onclick={changeState} type="button">
-        Trigger the effect!
+      <h1 id="todos">Todos</h1>
+      <button
+        type="button"
+        onclick={async () => {
+          setLoading(true);
+          setCounter(counter + 1);
+          await delay(500);
+          setTodo(JSON.stringify(TODOS[counter + 1]));
+          setLoading(false);
+        }}
+      >
+        Increment
       </button>
-      <button id="counter-button" onclick={updateCounter} type="button">
-        Update the counter!
-      </button>
+      <h2>Todo Id: {counter}</h2>
+      {loading ? (
+        <h2>Loading</h2>
+      ) : (
+        <h2>Todo: {todo}</h2>
+      )}
     </div>
   );
 };
