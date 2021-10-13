@@ -178,6 +178,7 @@ export const useEffect = (
     return;
   }
   const effect = hooks[counter] as EffectCall;
+  effect.effect = effectFn;
   handleEffect(effect, deps);
   effect.dependencies = deps;
 };
